@@ -23,8 +23,12 @@ cp .env.sample .env
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_GOOGLE_API_KEY` | Google API key (Sheets API enabled; restrict by HTTP referrer in production) |
-| `VITE_SPREADSHEET_ID` | Spreadsheet ID from the sheet URL (`…/d/<SPREADSHEET_ID>/edit`) |
+| `VITE_GOOGLE_API_KEY` | Google API key (Sheets API enabled; restrict by HTTP referrer in production). |
+| `VITE_SPREADSHEET_ID` | Spreadsheet ID from the sheet URL (`…/d/<SPREADSHEET_ID>/edit`). |
+| `VITE_BASE_PATH` | **Production `base` URL** for assets (see `vite.config.js`). Use a path with slashes, e.g. `/my-repo/` for GitHub Pages project sites; use `/` for root deploys. In dev, Vite still serves at `/`. |
+| `VITE_CACHE_TIMEOUT_SECONDS` | Optional. `localStorage` cache TTL in seconds (default **3600**). |
+| `VITE_CACHE` | Optional. Set to **`0`** to disable client caching (always fetch; no `localStorage` read/write). |
+| `REPO_URL` | Optional. Git remote URL if you extend **`npm run deploy`** with `gh-pages --repo` (see `.env.sample`). Not read by the default deploy script. |
 
 **Do not commit `.env`** — it is listed in `.gitignore`.
 
@@ -39,19 +43,19 @@ npm run dev
 1. In the repository on GitHub: **Settings → Pages**.
 2. Set **Source** to **GitHub Actions** (this repo includes a workflow that builds and deploys on push to `main` / `master`).
 
-The workflow sets `VITE_BASE` to `/<repository-name>/` so asset paths match GitHub Pages project URLs (e.g. `https://<user>.github.io/<repo>/`).
+In CI, set **`VITE_BASE_PATH`** to `/<repository-name>/` so asset paths match GitHub Pages project URLs (e.g. `https://<user>.github.io/<repo>/`).
 
 ### Serving from a subpath (custom base URL)
 
-If the built site is **not** at the domain root (e.g. GitHub Pages project site), Vite must use the correct `base` path.
+If the built site is **not** at the domain root (e.g. GitHub Pages project site), set **`VITE_BASE_PATH`** in `.env` (or in the build environment). `vite.config.js` reads **`process.env.VITE_BASE_PATH`** (via `dotenv`) for the **`base`** option.
 
-In `vite.config.js`, production `base` is taken from **`process.env.VITE_BASE`** at build time. Override it when building, for example:
+Example:
 
 ```bash
-VITE_BASE=/your-repo-name/ npm run build
+VITE_BASE_PATH=/your-repo-name/ npm run build
 ```
 
-Adjust the default in `vite.config.js` if you use this template as a starting point and your repo name differs from the fallback.
+Match the value to the path segment where the app is hosted, including leading and trailing slashes as in `.env.sample`.
 
 ## Deploy
 
@@ -61,7 +65,7 @@ Adjust the default in `vite.config.js` if you use this template as a starting po
 npm run deploy
 ```
 
-Ensure `VITE_BASE` matches your GitHub Pages URL before running `build` (see above). The deploy script runs `npm run build` then `gh-pages`.
+**`npm run deploy`** runs **`vite build`** (`.env` is loaded in `vite.config.js` via **`dotenv`**) then **`gh-pages -d dist`**. Configure **`VITE_BASE_PATH`** (and Sheets keys) in `.env` before deploying. To push to a specific remote, add **`gh-pages --repo …`** to the script or pass **`REPO_URL`** from `.env` using a shell helper (see comment in `.env.sample`).
 
 **Option B — CI**
 
@@ -74,7 +78,7 @@ Push to `main` or `master`; the **Deploy GitHub Pages** workflow builds and publ
 | `npm run dev` | Start Vite dev server |
 | `npm run build` | Production build to `dist/` |
 | `npm run preview` | Preview the production build locally |
-| `npm run deploy` | Build and deploy to `gh-pages` via `gh-pages` CLI |
+| `npm run deploy` | `vite build` then `gh-pages -d dist` (configure `VITE_BASE_PATH` in `.env`) |
 
 ## License
 
