@@ -10,6 +10,9 @@ export default defineConfig(({ command }) => ({
     vue(),
     tailwindcss(),
   ],
-  // Project GitHub Pages: assets under /repo-name/; dev server stays at /
-  base: process.env.VITE_BASE_PATH || '/aaa',
+  // GitHub Pages: set VITE_BASE_PATH=/repo-name/ in .env for build; dev uses /
+  base:
+    command === 'serve'
+      ? '/'
+      : (process.env.VITE_BASE_PATH || '/'),
 }))
