@@ -1,13 +1,12 @@
 # builda.page — Vue + Google Sheets template
 
-A minimal web project template built with [Vue 3](https://vuejs.org/) and [Vite](https://vitejs.dev/). It loads tabular data from a **public** Google Spreadsheet via the [Google Sheets API](https://developers.google.com/sheets/api) (API key only, no backend).
+A minimal web project template built with [Vue 3](https://vuejs.org/) and [Vite](https://vitejs.dev/). It loads tabular data from a **public** Google Spreadsheet: the default UI uses the **Visualization (gviz) JSON** endpoint (no API key). The **`SpreadsheetLoaderApi`** helper is available for the Sheets REST API with a key.
 
 ## Prerequisites
 
 - Node.js 20+ (recommended; matches CI)
-- A [Google Cloud](https://console.cloud.google.com/) project with **Google Sheets API** enabled
-- An API key allowed for your origins (e.g. `http://localhost:5173/*` for local dev)
-- The spreadsheet shared so **anyone with the link can view** (required for browser API-key access)
+- For the default **gviz** loader: spreadsheet shared so **anyone with the link can view**.
+- For **SpreadsheetLoaderApi** only: a [Google Cloud](https://console.cloud.google.com/) API key with **Google Sheets API** enabled and HTTP referrer restrictions as needed.
 
 ## Setup
 
@@ -23,8 +22,9 @@ cp .env.sample .env
 
 | Variable | Description |
 |----------|-------------|
-| `VITE_GOOGLE_API_KEY` | Google API key (Sheets API enabled; restrict by HTTP referrer in production). |
+| `VITE_GOOGLE_API_KEY` | Only for **`SpreadsheetLoaderApi`**. Not used by default **`SpreadsheetDataGViz`** in `list.vue`. |
 | `VITE_SPREADSHEET_ID` | Spreadsheet ID from the sheet URL (`…/d/<SPREADSHEET_ID>/edit`). |
+| `VITE_SHEET_NAME` | Optional. Sheet tab name for **gviz** (default **`items`**). |
 | `VITE_BASE_PATH` | **Production `base` URL** for assets (see `vite.config.js`). Use a path with slashes, e.g. `/my-repo/` for GitHub Pages project sites; use `/` for root deploys. In dev, Vite still serves at `/`. |
 | `VITE_CACHE_TIMEOUT_SECONDS` | Optional. `localStorage` cache TTL in seconds (default **3600**). |
 | `VITE_CACHE` | Optional. Set to **`0`** to disable client caching (always fetch; no `localStorage` read/write). |
@@ -65,7 +65,7 @@ Match the value to the path segment where the app is hosted, including leading a
 npm run deploy
 ```
 
-**`npm run deploy`** runs **`vite build`** (`.env` is loaded in `vite.config.js` via **`dotenv`**) then **`gh-pages -d dist`**. Configure **`VITE_BASE_PATH`** (and Sheets keys) in `.env` before deploying. To push to a specific remote, add **`gh-pages --repo …`** to the script or pass **`REPO_URL`** from `.env` using a shell helper (see comment in `.env.sample`).
+**`npm run deploy`** runs **`vite build`** (`.env` is loaded in `vite.config.js` via **`dotenv`**) then **`gh-pages -d dist`**. Configure **`VITE_BASE_PATH`** and spreadsheet env vars in `.env` before deploying. To push to a specific remote, add **`gh-pages --repo …`** to the script or pass **`REPO_URL`** from `.env` using a shell helper (see comment in `.env.sample`).
 
 **Option B — CI**
 

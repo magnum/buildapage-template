@@ -1,30 +1,19 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import utils from '../utils.js';
 import { useCache } from '../composables/useCache.js';
+import { SpreadsheetDataGViz } from '../spreadsheet/index.js';
 
 const items = ref([]);
 const { doCache } = useCache();
 
-async function loadItemsFromSheet() {
-  const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-  const spreadsheetId = import.meta.env.VITE_SPREADSHEET_ID;
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/items!A1:D10?key=${apiKey}`;
-  const response = await fetch(url);
-  const json = await response.json();
-  if (!response.ok) {
-    throw new Error(json.error?.message ?? 'Sheets request failed');
-  }
-  const values = json.values;
-  if (!values?.length) return [];
-  const keys = values.shift();
-  return values.map((row) =>
-    Object.fromEntries(keys.map((k, i) => [k, row[i] ?? '']))
-  );
-}
+const sheetLoader = new SpreadsheetDataGViz({
+  spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID,
+  sheetName: import.meta.env.VITE_SHEET_NAME || 'items',
+  query: null,
+});
 
 onMounted(() => {
-  doCache('sheet-items', items, loadItemsFromSheet);
+  doCache('sheet-items', items, () => sheetLoader.load());
 });
 </script>
 
