@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import utils from '../utils.js';
 import { useCache } from '../composables/useCache.js';
 
 const items = ref([]);
