@@ -66,9 +66,13 @@ All are optional; **`load()`** with no argument uses only the defaults above.
 
 `cacheClear` and **`noCache`** can target the same logical sheet either by relying on the **default key** or by passing the same **`key`** you used before.
 
+### Console logging
+
+Messages are prefixed with **`[SpreadsheetLoaderCache]`**. The storage **key** is always passed as the next argument: **`HIT`**, **`MISS`** (with a reason such as **`empty`**, **`expired, ttl …s`**, **`noCache`**, **`cleared`**, **`invalid JSON`**, **`invalid envelope`**), and **`CLEAR`** after **`cacheClear`**.
+
 ### Standalone script
 
-The deployed **`utils/spreadsheetLoaderGviz.js`** bundle includes the same caching behavior, so console snippets and `<script>` tags get **`load()`** with **30s** TTL and the **automatic key** unless you pass options.
+The deployed **`utils/spreadsheetLoaderGviz.js`** bundle includes the same caching and **the same console logging** as the app.
 
 ## Standalone bundle: `SpreadsheetDataGViz`
 

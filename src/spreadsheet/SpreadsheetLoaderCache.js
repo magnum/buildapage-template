@@ -36,15 +36,19 @@ export class SpreadsheetLoaderCache {
   static async get(opts) {
     const { key, ttlSeconds, noCache, cacheClear, compute } = opts
 
+    let clearedByFlag = false
     if (cacheClear) {
       try {
         localStorage.removeItem(key)
       } catch {
         /* ignore */
       }
+      clearedByFlag = true
+      console.log(LOG, 'CLEAR', key)
     }
 
     if (noCache) {
+      console.log(LOG, 'MISS', key, '(noCache)')
       return compute()
     }
 
@@ -53,22 +57,31 @@ export class SpreadsheetLoaderCache {
       try {
         const envelope = readEnvelope(JSON.parse(raw))
         if (envelope && !isStale(envelope.at, ttlSeconds)) {
+          console.log(LOG, 'HIT', key)
           return envelope.data
         }
+        if (envelope && isStale(envelope.at, ttlSeconds)) {
+          console.log(LOG, 'MISS', key, `(expired, ttl ${ttlSeconds}s)`)
+        } else {
+          console.log(LOG, 'MISS', key, '(invalid envelope)')
+        }
       } catch {
+        console.log(LOG, 'MISS', key, '(invalid JSON)')
         try {
           localStorage.removeItem(key)
         } catch {
           /* ignore */
         }
       }
+    } else {
+      console.log(LOG, 'MISS', key, clearedByFlag ? '(cleared)' : '(empty)')
     }
 
     const data = await compute()
     try {
       localStorage.setItem(key, JSON.stringify({ at: Date.now(), data }))
     } catch (e) {
-      console.warn(LOG, 'setItem failed', e)
+      console.warn(LOG, 'setItem failed', key, e)
     }
     return data
   }
