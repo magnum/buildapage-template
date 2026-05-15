@@ -79,8 +79,9 @@ The deployed **`utils/spreadsheetLoaderGviz.js`** bundle includes the same cachi
 The production build also outputs an **IIFE** at **`utils/spreadsheetLoaderGviz.js`** (see `vite.gviz-utility.config.js`). It defines the global **`SpreadsheetDataGViz`** constructor (same logic as `src/spreadsheet/spreadsheetLoaderGviz.js`).
 
 **Deployed example (this template):**  
-`https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js`  
-If you host elsewhere, swap the origin and path prefix to match your **`VITE_BASE_PATH`** (e.g. `https://<user>.github.io/<repo>/utils/spreadsheetLoaderGviz.js`).
+`https://builda.page/utils/spreadsheetLoaderGviz.js`  
+
+If you fork or deploy under another origin or subpath, swap **`src`** so it matches your **`VITE_BASE_PATH`** (e.g. `https://<user>.github.io/<repo>/utils/spreadsheetLoaderGviz.js` for a GitHub Pages project site).
 
 That file is only produced by **`npm run build`**; during **`npm run dev`** use **`npm run preview`** after a build, or load the script from a deployed URL.
 
@@ -89,7 +90,7 @@ That file is only produced by **`npm run build`**; during **`npm run dev`** use 
 Load the IIFE first, then an inline script. Browsers run **`defer`-less** classic scripts in order, so the global **`SpreadsheetDataGViz`** exists before your code runs. An **async IIFE** lets you use **`await`** on **`load()`** without marking the whole page script as `type="module"`:
 
 ```html
-<script src="https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js"></script>
+<script src="https://builda.page/utils/spreadsheetLoaderGviz.js"></script>
 <script>
   (async () => {
     const loader = new SpreadsheetDataGViz({
@@ -109,7 +110,7 @@ Swap the **`src`** if you host under another base URL (see above). **`load()`** 
 **Alternative** without `async`/`await` (Promise only):
 
 ```html
-<script src="https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js"></script>
+<script src="https://builda.page/utils/spreadsheetLoaderGviz.js"></script>
 <script>
   const loader = new SpreadsheetDataGViz({
     spreadsheetId: '1bp0t2aDrg03X0cWZX5TlU0ZP7U2qvwF2YgIqVK_7pIo',
@@ -131,7 +132,7 @@ Open DevTools on any tab. Paste **the whole block** below and press Enter (moder
 ```js
 await new Promise((done, fail) => {
   const s = document.createElement('script');
-  s.src = 'https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js';
+  s.src = 'https://builda.page/utils/spreadsheetLoaderGviz.js';
   s.onload = done;
   s.onerror = fail;
   document.head.appendChild(s);
