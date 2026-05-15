@@ -28,7 +28,7 @@ cp .env.sample .env
 | `VITE_BASE_PATH` | **Production `base` URL** for assets (see `vite.config.js`). Use a path with slashes, e.g. `/my-repo/` for GitHub Pages project sites; use `/` for root deploys. In dev, Vite still serves at `/`. |
 | `REPO_URL` | Optional. Git remote URL if you extend **`npm run deploy`** with `gh-pages --repo` (see `.env.sample`). Not read by the default deploy script. |
 
-**Cache:** **`SpreadsheetDataGViz`** and **`SpreadsheetLoaderApi`** persist **`load()`** results in **`localStorage`** (default TTL **30s** via constructor `timeout` or per call `load({ timeout: 600 })`). Default storage key is `spreadsheetId-sheetName` (Gviz) or `spreadsheetId-range` (API). Per call you can pass `key`, `noCache: true` (skip read/write), or `cacheClear: true` (drop entry for that key then fetch).
+Caching for **`SpreadsheetDataGViz`** and **`SpreadsheetLoaderApi`** is described in **[Sheet loader cache](#sheet-loader-cache)**.
 
 **Do not commit `.env`** — it is listed in `.gitignore`.
 
@@ -37,6 +37,38 @@ cp .env.sample .env
 ```bash
 npm run dev
 ```
+
+## Sheet loader cache
+
+**`SpreadsheetDataGViz`** and **`SpreadsheetLoaderApi`** store the result of **`load()`** in the browser’s **`localStorage`** so repeat visits avoid hitting Google on every call. The helper is **`SpreadsheetLoaderCache`** (`src/spreadsheet/SpreadsheetLoaderCache.js`); you normally only use **`load()`** on the loaders.
+
+### Defaults
+
+| | |
+|---|---|
+| **TTL** | **30 seconds** after a successful fetch. Configurable per instance: `new SpreadsheetDataGViz({ …, timeout: 120 })`, or per call: `load({ timeout: 600 })`. |
+| **Storage key** | If you omit **`load({ key: '…' })`**, the key is derived automatically: **`${spreadsheetId}-${sheetName}`** for **Gviz**, and **`${spreadsheetId}-${range}`** for the **API** (e.g. `items!A1:D10`). Use an explicit **`key`** when several loaders share the same sheet but need separate cache entries. |
+
+### Payload shape
+
+Each key stores a small JSON object: **`{ at: <timestamp ms>, data: <rows> }`**. If the entry is missing, invalid, or **older than the TTL**, **`load()`** fetches again and overwrites the key.
+
+### Per-call options
+
+All are optional; **`load()`** with no argument uses only the defaults above.
+
+| Option | Effect |
+|--------|--------|
+| **`timeout`** | TTL in **seconds** for this call only (defaults to the constructor’s **`timeout`**, normally **30**). |
+| **`key`** | **`localStorage`** key for this call; if omitted, the automatic key for that loader is used. |
+| **`cacheClear: true`** | Removes the entry for the resolved key (explicit or automatic), then fetches and, unless **`noCache`** is set, writes a fresh entry. Use this to **invalidate** cache for that key. |
+| **`noCache: true`** | **Skips** reading and writing cache for this invocation only: always fetches from the network and does not update **`localStorage`**. |
+
+`cacheClear` and **`noCache`** can target the same logical sheet either by relying on the **default key** or by passing the same **`key`** you used before.
+
+### Standalone script
+
+The deployed **`utils/spreadsheetLoaderGviz.js`** bundle includes the same caching behavior, so console snippets and `<script>` tags get **`load()`** with **30s** TTL and the **automatic key** unless you pass options.
 
 ## Standalone bundle: `SpreadsheetDataGViz`
 
@@ -68,7 +100,9 @@ With **`async`** on the first script you must wait for `load` before using the c
 
 ### Using SpreadsheetDataGViz in the browser console
 
-Open DevTools on any tab. Paste **the whole block** below and press Enter (modern consoles support top-level **`await`**). It loads the bundle, fetches the sheet, and prints the rows.
+Open DevTools on any tab. Paste **the whole block** below and press Enter (modern consoles support top-level **`await`**). It loads the bundle, builds a loader, and runs **`load()`**.
+
+**`load()`** with no arguments uses the **default cache**: TTL **30 seconds** (see [Sheet loader cache](#sheet-loader-cache)) and an automatic **`localStorage`** key **`${spreadsheetId}-${sheetName}`** for this sheet tab.
 
 ```js
 await new Promise((done, fail) => {
@@ -84,11 +118,15 @@ const loader = new SpreadsheetDataGViz({
   sheetName: 'items',
   query: null,
 });
+
 const rows = await loader.load();
 console.log(rows);
+
+// await loader.load({ cacheClear: true }); // remove cached entry for this loader's key, then fetch and cache again
+// await loader.load({ noCache: true });    // skip cache for this call only (no read, no write)
 ```
 
-Running it again re-appends the script (harmless) and fetches fresh data.
+Re-running the block re-appends the script (harmless). A second **`loader.load()`** within **30s** returns cached data unless you use **`noCache`** or **`cacheClear`** (see comments above).
 
 ## GitHub Pages
 
