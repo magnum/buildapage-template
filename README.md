@@ -84,9 +84,29 @@ If you host elsewhere, swap the origin and path prefix to match your **`VITE_BAS
 
 That file is only produced by **`npm run build`**; during **`npm run dev`** use **`npm run preview`** after a build, or load the script from a deployed URL.
 
-### Using a `<script>` tag
+### Drop-in HTML (any page)
 
-Add the script, then run your code in a second tag (or a module script after load):
+Load the IIFE first, then an inline script. Browsers run **`defer`-less** classic scripts in order, so the global **`SpreadsheetDataGViz`** exists before your code runs. An **async IIFE** lets you use **`await`** on **`load()`** without marking the whole page script as `type="module"`:
+
+```html
+<script src="https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js"></script>
+<script>
+  (async () => {
+    const loader = new SpreadsheetDataGViz({
+      spreadsheetId: '1bp0t2aDrg03X0cWZX5TlU0ZP7U2qvwF2YgIqVK_7pIo',
+      sheetName: 'items',
+      query: null,
+    });
+
+    const rows = await loader.load();
+    console.log(rows);
+  })();
+</script>
+```
+
+Swap the **`src`** if you host under another base URL (see above). **`load()`** uses the same **30s `localStorage` cache** and default key as in the app ([Sheet loader cache](#sheet-loader-cache)); use **`load({ noCache: true })`** or **`load({ cacheClear: true })`** when needed.
+
+**Alternative** without `async`/`await` (Promise only):
 
 ```html
 <script src="https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js"></script>
@@ -100,7 +120,7 @@ Add the script, then run your code in a second tag (or a module script after loa
 </script>
 ```
 
-With **`async`** on the first script you must wait for `load` before using the class (e.g. `defer` on both or a single inline listener).
+If you add **`async`** to the first **`<script src>`**, you must wait for **`load`** before using **`SpreadsheetDataGViz`** (e.g. listen to **`onload`** on that tag, or use **`defer`** consistently).
 
 ### Using SpreadsheetDataGViz in the browser console
 
