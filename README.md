@@ -66,9 +66,9 @@ Add the script, then run your code in a second tag (or a module script after loa
 
 With **`async`** on the first script you must wait for `load` before using the class (e.g. `defer` on both or a single inline listener).
 
-### Using the browser console
+### Using SpreadsheetDataGViz in the browser console
 
-On any page (e.g. open DevTools on `about:blank` or your site), inject the script then call **`load()`**. Minimal loader:
+Open DevTools on any tab. Paste **the whole block** below and press Enter (modern consoles support top-level **`await`**). It loads the bundle, fetches the sheet, and prints the rows.
 
 ```js
 await new Promise((done, fail) => {
@@ -78,11 +78,7 @@ await new Promise((done, fail) => {
   s.onerror = fail;
   document.head.appendChild(s);
 });
-```
 
-Then:
-
-```js
 const loader = new SpreadsheetDataGViz({
   spreadsheetId: '1bp0t2aDrg03X0cWZX5TlU0ZP7U2qvwF2YgIqVK_7pIo',
   sheetName: 'items',
@@ -92,7 +88,7 @@ const rows = await loader.load();
 console.log(rows);
 ```
 
-You can paste both blocks in order in the console (top-level **`await`** is supported in the Chrome / Firefox / Safari modern consoles).
+Running it again re-appends the script (harmless) and fetches fresh data.
 
 ## GitHub Pages
 
