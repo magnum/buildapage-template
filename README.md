@@ -26,9 +26,9 @@ cp .env.sample .env
 | `VITE_SPREADSHEET_ID` | Spreadsheet ID from the sheet URL (`…/d/<SPREADSHEET_ID>/edit`). |
 | `VITE_SHEET_NAME` | Optional. Sheet tab name for **gviz** (default **`items`**). |
 | `VITE_BASE_PATH` | **Production `base` URL** for assets (see `vite.config.js`). Use a path with slashes, e.g. `/my-repo/` for GitHub Pages project sites; use `/` for root deploys. In dev, Vite still serves at `/`. |
-| `VITE_CACHE_TIMEOUT_SECONDS` | Optional. `localStorage` cache TTL in seconds (default **3600**). |
-| `VITE_CACHE` | Optional. Set to **`0`** to disable client caching (always fetch; no `localStorage` read/write). |
 | `REPO_URL` | Optional. Git remote URL if you extend **`npm run deploy`** with `gh-pages --repo` (see `.env.sample`). Not read by the default deploy script. |
+
+**Cache:** **`SpreadsheetDataGViz`** and **`SpreadsheetLoaderApi`** persist **`load()`** results in **`localStorage`** (default TTL **30s** via constructor `timeout` or per call `load({ timeout: 600 })`). Default storage key is `spreadsheetId-sheetName` (Gviz) or `spreadsheetId-range` (API). Per call you can pass `key`, `noCache: true` (skip read/write), or `cacheClear: true` (drop entry for that key then fetch).
 
 **Do not commit `.env`** — it is listed in `.gitignore`.
 

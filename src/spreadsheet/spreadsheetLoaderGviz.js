@@ -2,6 +2,7 @@
  * Loads via the public Google Visualization "tq" endpoint (no API key).
  * Works for spreadsheets published / accessible to "anyone with the link".
  */
+import { SpreadsheetLoaderCache } from './SpreadsheetLoaderCache.js'
 
 function parseGvizResponseBody(text) {
   const m = text.match(/setResponse\(([\s\S]*)\);?\s*$/)
@@ -17,15 +18,23 @@ export class SpreadsheetDataGViz {
    *   spreadsheetId: string
    *   sheetName: string
    *   query?: string | null
+   *   timeout?: number
    * }} options
+   * @param {number} [options.timeout=30] Default cache TTL in seconds
    */
-  constructor({ spreadsheetId, sheetName, query = null }) {
+  constructor({ spreadsheetId, sheetName, query = null, timeout = 30 }) {
     this.spreadsheetId = spreadsheetId
     this.sheetName = sheetName
     this.query = query
+    this.timeout = timeout
   }
 
-  async load() {
+  /** Default cache key if `load({ key })` is omitted. */
+  defaultCacheKey() {
+    return `${this.spreadsheetId}-${this.sheetName}`
+  }
+
+  async fetchUncached() {
     const { spreadsheetId, sheetName, query } = this
     let url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`
     if (query) url += `&tq=${encodeURIComponent(query)}`
@@ -53,6 +62,21 @@ export class SpreadsheetDataGViz {
         obj[cols[i]] = value
       })
       return obj
+    })
+  }
+
+  /**
+   * @param {{ timeout?: number, key?: string, noCache?: boolean, cacheClear?: boolean }} [opts]
+   */
+  async load(opts = {}) {
+    const key = opts.key ?? this.defaultCacheKey()
+    const ttlSeconds = opts.timeout ?? this.timeout
+    return SpreadsheetLoaderCache.get({
+      key,
+      ttlSeconds,
+      noCache: opts.noCache,
+      cacheClear: opts.cacheClear,
+      compute: () => this.fetchUncached(),
     })
   }
 }

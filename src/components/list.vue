@@ -1,10 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useCache } from '../composables/useCache.js';
 import { SpreadsheetDataGViz } from '../spreadsheet/index.js';
 
 const items = ref([]);
-const { doCache } = useCache();
 
 const sheetLoader = new SpreadsheetDataGViz({
   spreadsheetId: import.meta.env.VITE_SPREADSHEET_ID,
@@ -12,8 +10,8 @@ const sheetLoader = new SpreadsheetDataGViz({
   query: null,
 });
 
-onMounted(() => {
-  doCache('sheet-items', items, () => sheetLoader.load());
+onMounted(async () => {
+  items.value = await sheetLoader.load();
 });
 </script>
 
