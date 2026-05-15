@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>example</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-neutral-50 text-neutral-800 px-4">
+  <p class="max-w-5xl text-center font-medium leading-tight text-[4vw]">
+    Open the browser's console to see the data…
+  </p>
+  <script src="https://builda.page/utils/spreadsheetLoaderGviz.js"></script>
+  <script>
+    (async () => {
+      const loader = new SpreadsheetDataGViz({
+        spreadsheetId: '1bp0t2aDrg03X0cWZX5TlU0ZP7U2qvwF2YgIqVK_7pIo',
+        sheetName: 'items',
+        query: null,
+      });
+
+      const rows = await loader.load();
+      console.log(rows);
+    })();
+  </script>
+</body>
+</html>
