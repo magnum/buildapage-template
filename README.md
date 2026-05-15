@@ -38,6 +38,62 @@ cp .env.sample .env
 npm run dev
 ```
 
+## Standalone bundle: `SpreadsheetDataGViz`
+
+The production build also outputs an **IIFE** at **`utils/spreadsheetLoaderGviz.js`** (see `vite.gviz-utility.config.js`). It defines the global **`SpreadsheetDataGViz`** constructor (same logic as `src/spreadsheet/spreadsheetLoaderGviz.js`).
+
+**Deployed example (this template):**  
+`https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js`  
+If you host elsewhere, swap the origin and path prefix to match your **`VITE_BASE_PATH`** (e.g. `https://<user>.github.io/<repo>/utils/spreadsheetLoaderGviz.js`).
+
+That file is only produced by **`npm run build`**; during **`npm run dev`** use **`npm run preview`** after a build, or load the script from a deployed URL.
+
+### Using a `<script>` tag
+
+Add the script, then run your code in a second tag (or a module script after load):
+
+```html
+<script src="https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js"></script>
+<script>
+  const loader = new SpreadsheetDataGViz({
+    spreadsheetId: '1bp0t2aDrg03X0cWZX5TlU0ZP7U2qvwF2YgIqVK_7pIo',
+    sheetName: 'items',
+    query: null,
+  });
+  loader.load().then((rows) => console.log(rows));
+</script>
+```
+
+With **`async`** on the first script you must wait for `load` before using the class (e.g. `defer` on both or a single inline listener).
+
+### Using the browser console
+
+On any page (e.g. open DevTools on `about:blank` or your site), inject the script then call **`load()`**. Minimal loader:
+
+```js
+await new Promise((done, fail) => {
+  const s = document.createElement('script');
+  s.src = 'https://magnum.github.io/buildapage-template/utils/spreadsheetLoaderGviz.js';
+  s.onload = done;
+  s.onerror = fail;
+  document.head.appendChild(s);
+});
+```
+
+Then:
+
+```js
+const loader = new SpreadsheetDataGViz({
+  spreadsheetId: '1bp0t2aDrg03X0cWZX5TlU0ZP7U2qvwF2YgIqVK_7pIo',
+  sheetName: 'items',
+  query: null,
+});
+const rows = await loader.load();
+console.log(rows);
+```
+
+You can paste both blocks in order in the console (top-level **`await`** is supported in the Chrome / Firefox / Safari modern consoles).
+
 ## GitHub Pages
 
 1. In the repository on GitHub: **Settings → Pages**.
@@ -76,7 +132,7 @@ Push to `main` or `master`; the **Deploy GitHub Pages** workflow builds and publ
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start Vite dev server |
-| `npm run build` | Production build to `dist/` |
+| `npm run build` | Production app + **`dist/utils/spreadsheetLoaderGviz.js`** (IIFE) |
 | `npm run preview` | Preview the production build locally |
 | `npm run deploy` | `vite build` then `gh-pages -d dist` (configure `VITE_BASE_PATH` in `.env`) |
 
