@@ -87,6 +87,8 @@ That file is only produced by **`npm run build`**; during **`npm run dev`** use 
 
 ### Drop-in HTML (any page)
 
+A ready-made page that loads the bundle, fetches the demo sheet, and logs rows is **[`public/examples/example.html`](public/examples/example.html)** (served as **`/examples/example.html`** after **`npm run build`** / deploy, e.g. [`https://builda.page/examples/example.html`](https://builda.page/examples/example.html)).
+
 Load the IIFE first, then an inline script. Browsers run **`defer`-less** classic scripts in order, so the global **`SpreadsheetDataGViz`** exists before your code runs. An **async IIFE** lets you use **`await`** on **`load()`** without marking the whole page script as `type="module"`:
 
 ```html
